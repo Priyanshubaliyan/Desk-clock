@@ -1,0 +1,146 @@
+(async () => {
+      try {
+        const wakeLock = await navigator.wakeLock.request("screen");
+      } catch (err) {
+        // the wake lock request fails - usually system related, such being low on battery
+        console.log(`${err.name}, ${err.message}`);
+      }
+    })();
+
+    const clock = document.getElementById("clock");
+    const hourColor = document.getElementById("hourColor");
+    const minuteColor = document.getElementById("minuteColor");
+    const tempEl = document.getElementById("temp");
+
+    const hourNum = document.getElementById("hourNum");
+    const minuteNum = document.getElementById("minuteNum");
+    const secondNum = document.getElementById("secondNum");
+
+    const date = document.getElementById("date");
+
+    searchEl.value = localStorage.getItem("locationName") || "";
+
+    hourColor.addEventListener("change", () => {
+      localStorage.setItem("hourColor", hourColor.value);
+      render();
+    });
+    minuteColor.addEventListener("change", () => {
+      localStorage.setItem("minuteColor", minuteColor.value);
+      render();
+    });
+
+    hourColor.value = localStorage.getItem("hourColor") || "#ffffff";
+    minuteColor.value = localStorage.getItem("minuteColor") || "#ffffff";
+
+    setTimeout(() => {
+      scaleClockToFitScreen();
+    }, 100);
+    render();
+    setInterval(() => {
+      render();
+    }, 1000);
+
+    function render() {
+      const now = new Date();
+      const hour = now.getHours();
+      const minute = now.getMinutes();
+      const second = now.getSeconds();
+
+      hourNum.innerHTML = hours12(hour);
+      minuteNum.innerHTML = pad(minute);
+      secondNum.innerHTML = "." + pad(second);
+
+      hourNum.style.color = hourColor.value;
+      minuteNum.style.color = minuteColor.value;
+
+      renderDate();
+      scaleClockToFitScreen();
+    }
+
+    function scaleClockToFitScreen() {
+      const clientWidth = clock.clientWidth;
+      const containerWidth = clockContainer.clientWidth;
+      const pageWidth = window.innerWidth;
+
+      const scale = containerWidth / clientWidth;
+      clock.style.transform = `scale(${scale})`;
+      tempEl.style.transform = `scale(${scale})`;
+      date.style.transform = `scale(${scale})`;
+
+      tempEl.style.marginTop = `${scale * 20 - 40}px`;
+      tempEl.style.marginLeft = `${scale * 10}px`;
+
+      date.style.marginBottom = `${scale * 20 + 20}px`;
+      date.style.marginRight = `${scale * 20}px`;
+    }
+
+    window.onresize = () => {
+      scaleClockToFitScreen();
+    };
+    function pad(num) {
+      return num.toString().padStart(2, "0");
+    }
+    function hours12(hour) {
+      return hour % 12 || 12;
+    }
+
+    async function search(val) {
+      const res = await fetch(
+        "https://geocoding-api.open-meteo.com/v1/search?name=" + val
+      )
+        .then((res) => res.json())
+        .then((e) => e.results[0])
+        .catch(() => {});
+
+      if (!res) return;
+
+      localStorage.setItem("longitude", res.longitude);
+      localStorage.setItem("latitude", res.latitude);
+      localStorage.setItem("locationName", res.name);
+
+      fetchAndDisplayTemp();
+    }
+
+    fetchAndDisplayTemp();
+    async function fetchAndDisplayTemp() {
+      const longitude = localStorage.getItem("longitude");
+      const latitude = localStorage.getItem("latitude");
+      if (longitude && latitude) {
+        const temp = (async = fetchTemp(longitude, latitude));
+        tempEl.innerHTML = (await temp) + "°";
+      }
+    }
+    setTimeout(() => {
+      fetchAndDisplayTemp();
+    }, 600000);
+
+    function fetchTemp(long, lat) {
+      return fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${long}&current=temperature_2m`
+      )
+        .then((res) => res.json())
+        .then((e) => e.current.temperature_2m)
+        .catch(() => {});
+    }
+
+    function renderDate() {
+      const now = new Date();
+      const month = pad(now.getMonth() + 1);
+      const day = pad(now.getDate());
+      const year = now.getFullYear();
+
+      const weekDayStr = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ];
+      const weekDay = weekDayStr[now.getDay()];
+
+      const str = `${weekDay}  ${month}-${day}-${year}`;
+
+      date.innerHTML = str;
+    }
