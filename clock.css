@@ -1,0 +1,61 @@
+:root {
+        --bg: black;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+        color: white;
+        user-select: none;
+        font-family: "Inter", sans-serif;
+      }
+      #secondNum {
+        font-size: 12px;
+      }
+      #clockContainer {
+        height: 100vh;
+        max-width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        aspect-ratio: 16/9;
+        font-size: 28px;
+      }
+      #clock {
+        font-family: "Inter", sans-serif;
+        font-optical-sizing: auto;
+        font-weight: 600;
+        font-style: normal;
+        font-variant-numeric: tabular-nums;
+      }
+      #date {
+        font-size: 4px;
+        margin-bottom: 14px;
+        color: rgb(0, 214, 0);
+        font-weight: 800;
+        align-self: flex-end;
+        white-space: break-spaces;
+        margin-right: 20px;
+      }
+      #temp {
+        font-size: 8px;
+        margin-bottom: 14px;
+        color: rgb(219, 4, 4);
+        font-weight: 800;
+        align-self: flex-start;
+        margin-left: 20px;
+      }
+      .controls {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        font-size: 24px;
+      }
